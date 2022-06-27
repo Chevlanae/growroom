@@ -1,8 +1,8 @@
 import adafruit_dht
 import board
 import time
-from gpiozero import Device, OutputDevice, InputDevice
-from gpiozero.pins import mock, native
+from gpiozero import OutputDevice
+from gpiozero.pins import mock
 from w1thermsensor import W1ThermSensor, Sensor
 
 class DHT22:
@@ -15,14 +15,8 @@ class DHT22:
         #set power pin to a mock pin if there is none specified
         if powerPin is None:
 
-            #mock pin factory https://gpiozero.readthedocs.io/en/stable/api_pins.html#mock-pins
-            Device.pin_factory = mock.MockFactory()
-
-            #Mock pin
-            self.power = OutputDevice(1)
-
-            #set default pin factory back to native once the mock pin device is constructed
-            Device.pin_factory =  native.NativeFactory()
+            #Mock pin https://gpiozero.readthedocs.io/en/stable/api_pins.html#mock-pins
+            self.power = OutputDevice(1, pin_factory=mock.MockFactory())
 
         else:
 
@@ -31,6 +25,9 @@ class DHT22:
 
         #Adafruit bullshit https://github.com/adafruit/Adafruit_CircuitPython_DHT
         self.device = adafruit_dht.DHT22(getattr(board, "D" + str(dataPin)))
+
+
+        
     
     def read(self):
         '''Reads the sensor and returns the data in a tuple: (humidity, temperature).
@@ -39,26 +36,32 @@ class DHT22:
 
         #init
         power_state = self.power.value #get current power state
-        timeout = time.time() + 60 #1 minute timeout
+        timeout = time.time() + 15 #15 second timeout
         humidity, temperature = None, None #result
 
         self.power.on() #power sensor on if it isn't already
-
-        #loop until a result is returned, or 1 minute has passed
+                
+        #loop until a result is returned, or until timeout has been reached
         while time.time() < timeout:
 
-            #give the sensor 5 seconds, otherwise a bug will occur where the sensor will output the data from when it was previously powered on.
-            time.sleep(5)
-
             try:
-            
+
+                #give the sensor 3 seconds, otherwise a bug will occur where the sensor will output the data from when it was previously powered on.
+                time.sleep(3.0) 
+
                 #read sensor
                 humidity, temperature = self.device.humidity, self.device.temperature
 
             except RuntimeError:
 
-                #if read operation fails, do nothing
-                pass
+                #if read operation fails, try again
+                continue
+
+            except Exception as error:
+
+                #close pulsein process
+                self.device.exit()
+                raise error
 
             finally:
                 
@@ -112,14 +115,3 @@ class DS18B20:
             result.append(device.get_temperature())
 
         return result
-        
-
-class API:
-
-    def __init__(self, *args):
-        '''args: (DHT22 output pin, DHT22 ACC pin [optional, set to None to disable power functionality for DHT22], 3.3v relay pin, LLPK1 output pin)'''
-
-        self.air_temp_sensor = DHT22(args[0], args[1])
-        self.water_temp_sensor = DS18B20()
-        self.relay = OutputDevice(args[2])
-        self.water_level_sensor = InputDevice(args[3])
