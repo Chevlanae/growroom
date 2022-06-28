@@ -1,15 +1,33 @@
 from flask import Flask, request, render_template
 from gpiozero import OutputDevice, InputDevice
+import asyncio
 
 # local
 from devices import DHT22, DS18B20
 
+# local GPIO devices
 dht22 = DHT22(27, 23)
 ds18b20 = DS18B20()
-relay = OutputDevice(24)
+pumprelay = OutputDevice(24)
 llpk1 = InputDevice(25)
 
+# flask
 app = Flask(__name__)
+
+# async init
+loop = asyncio.new_event_loop()
+tasks = set()
+
+
+async def water_loop(timeOn: int, timeOff: int):
+    print("Water cycle started...")
+    while True:
+        print("Relay On...")
+        pumprelay.on()
+        await asyncio.sleep(timeOn)
+        print("Relay Off...")
+        pumprelay.off()
+        await asyncio.sleep(timeOff)
 
 
 @app.route("/")
@@ -41,16 +59,32 @@ def set_relay():
 
     try:
         power = request.args.get('power')
-
-        if power == "on":
-            relay.on()
-        elif power == "off":
-            relay.off()
     except:
-        pass
+        power = ""
+
+    if power == "on" and len(tasks) == 0:
+
+        tasks.add(loop.create_task(water_loop(60, 180)))
+
+        if loop.is_running() == False:
+            loop.run_forever()
+
+    elif power == "off":
+
+        for task in tasks:
+            task.cancel()
+
+        tasks.clear()
+
+        loop.call_soon_threadsafe(loop.stop)
+        print("Water cycle stopped...")
+
+        pumprelay.off()
+        print("Relay Off...")
 
     return {
-        'power_state': relay.value
+        'power_state': pumprelay.value,
+        'loop_running': len(tasks) > 0
     }
 
 

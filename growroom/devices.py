@@ -58,7 +58,6 @@ class DHT22:
             except Exception as error:
 
                 # close pulsein process
-                self.device.exit()
                 raise error
 
             finally:
