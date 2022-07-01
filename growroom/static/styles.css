@@ -4,6 +4,16 @@ html {
 	overflow: scroll;
 }
 
+body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.container {
+	flex-direction: column;
+}
+
 div.container {
 	overflow: hidden;
 }
@@ -36,70 +46,12 @@ td input {
 	overflow: hidden;
 }
 
-.header a {
-	float: left;
-	display: block;
-	color: black;
-	text-align: center;
-	padding: 14px 16px;
-	font-size: 17px;
-}
-
-.header a:hover {
-	background-color: lavender;
-	color: black;
-}
-
-.header a.active {
-	background-color: violet;
-	color: black;
-}
-.header .icon {
-	display: none;
-	max-height: 20px;
-}
-
-.header .icon .bar {
-	width: 25px;
-	height: 3px;
-	background-color: black;
-	margin: 3px 0;
-}
-
-@media screen and (max-width: 600px) {
-	.header a:not(:first-child) {
-		display: none;
+@media screen and (max-width: 800px) {
+	body {
+		align-items: flex-start;
 	}
-	.header a.icon {
-		float: right;
-		display: block;
-	}
-}
 
-@media screen and (max-width: 600px) {
 	.responsive {
 		position: relative;
 	}
-	.responsive .icon {
-		position: absolute;
-		right: 0;
-		top: 0;
-	}
-	.responsive a {
-		float: none;
-		display: block;
-		text-align: left;
-	}
-}
-
-.centered {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-}
-
-.container {
-	border-style: solid;
-	background: white;
 }

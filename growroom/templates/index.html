@@ -7,12 +7,12 @@
 		<meta name="viewport" content="width-device-width, initial-scale=1">
 	</head>
 	<body style="font-size: 150%">
-		<div class="centered" style="text-align: center; margin-top: 100px">
-			<img src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif" />
+		<div class="container" style="text-align: center; margin-top: 100px; min-width: 450px;">
+			<img src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif" style="margin-top: 1em" />
 			<h1 style=>Grow Room</h1>
 			<div
 				class="container responsive"
-				style="text-align: center; max-width: 600px; padding: 25px 25px 25px 25px"
+				style="text-align: center; max-width: 600px; padding: 25px 25px 25px 25px; background: white; border-style: solid;"
 			>
 				<h2>Sensor Data</h2>
 				<table id="meters" style="text-align: left">
@@ -51,29 +51,23 @@
 				<h2>Relays</h2>
 				<table id="relay-table">
 					<tr>
-						<td><strong>Relay#</strong></td>
+						<td><strong>Relay Id</strong></td>
 						<td><strong>Power State</strong></td>
 					</tr>
 					<tr id="relays">
-						<td>0</td>
+						<td>pump_relay</td>
 						<td>
 							<strong><span id="relay-status"></span></strong>
 						</td>
 					</tr>
 				</table>
 
-				<table style="margin-bottom:auto;">
-					<tr>
-						<input id="refresh-toggle" type="checkbox" style="margin-top: 2em; margin-bottom: 2em" />
-						Auto-refresh<br />
-					</tr>
-					<tr>
-						<input id="refresh" type="button" value="Refresh" /><br /><br />
-					</tr>
-					<tr>
-						<input id="toggle-loop" type="button" value="Toggle Water Loop" /><br />
-					</tr>
-				</table>
+				<div style="margin-bottom:1em">
+					<input id="refresh-toggle" type="checkbox" style="margin-top: 2em; margin-bottom: 2em" />
+					<label for="refresh-toggle"> Auto-refresh</label><br />
+					<input id="refresh" type="button" value="Refresh" /><br /><br />
+					<input id="toggle-loop" type="button" value="Toggle Water Loop" /><br />
+				</div>
 			</div>
 		</div>
 	</body>
