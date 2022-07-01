@@ -1,6 +1,7 @@
 import adafruit_dht
 import board
 import time
+import asyncio
 from gpiozero import OutputDevice
 from gpiozero.pins import mock
 from w1thermsensor import W1ThermSensor, Sensor
@@ -57,7 +58,7 @@ class DHT22:
 
             except Exception as error:
 
-                # close pulsein process
+                # halt for any other exceptions
                 raise error
 
             finally:
@@ -99,13 +100,15 @@ class DS18B20:
 
         return self.device.get_temperature()
 
-    def list_devices(self) -> list[W1ThermSensor]:
-        '''Static method. Returns result of W1ThermSensor.get_available_sensors(Sensor.DS18B20)'''
+    @staticmethod
+    def list_devices() -> list[W1ThermSensor]:
+        '''Returns result of W1ThermSensor.get_available_sensors(Sensor.DS18B20)'''
 
         return W1ThermSensor.get_available_sensors(Sensor.DS18B20)
 
-    def read_all(self) -> list[float]:
-        '''Static method. Reads temperature data from all sensors and returns an array of floats.'''
+    @staticmethod
+    def read_all() -> list[float]:
+        '''Reads temperature data from all sensors and returns an array of floats.'''
 
         result = []
 
@@ -113,3 +116,21 @@ class DS18B20:
             result.append(device.get_temperature())
 
         return result
+
+
+async def power_loop(relay: OutputDevice, timeOn: int, timeOff: int, id=""):
+    '''Infinite loop that turns a relay on and off at the provided intervals'''
+
+    print("Power cycle started...")
+
+    while True:
+
+        relay.on()
+        print("Relay " + id + " On...")
+
+        await asyncio.sleep(timeOn)
+
+        relay.off()
+        print("Relay " + id + " Off...")
+
+        await asyncio.sleep(timeOff)

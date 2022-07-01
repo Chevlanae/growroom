@@ -3,7 +3,7 @@ from gpiozero import OutputDevice, InputDevice
 import asyncio
 
 # local
-from devices import DHT22, DS18B20
+from devices import DHT22, DS18B20, power_loop
 
 # local GPIO devices
 dht22 = DHT22(27, 23)
@@ -15,19 +15,8 @@ llpk1 = InputDevice(25)
 app = Flask(__name__)
 
 # async init
-loop = asyncio.new_event_loop()
-tasks = set()
-
-
-async def water_loop(timeOn: int, timeOff: int):
-    print("Water cycle started...")
-    while True:
-        print("Relay On...")
-        pumprelay.on()
-        await asyncio.sleep(timeOn)
-        print("Relay Off...")
-        pumprelay.off()
-        await asyncio.sleep(timeOff)
+event_loop = asyncio.new_event_loop()
+tasks = set()  # task aggregator
 
 
 @app.route("/")
@@ -54,29 +43,39 @@ def read_DS18B20():
     }
 
 
-@app.route("/relay")
-def set_relay():
+@app.route("/loop")
+def set_loop():
 
+    # set power parameter
     try:
-        power = request.args.get('power')
+        execution = request.args.get('execution')
     except:
-        power = ""
+        execution = ""
 
-    if power == "on" and len(tasks) == 0:
+    # query is ?execution=start and there are no tasks
+    if execution == "start" and len(tasks) == 0:
 
-        tasks.add(loop.create_task(water_loop(60, 180)))
+        # create power_loop task and add it to tasks set
+        tasks.add(event_loop.create_task(power_loop(pumprelay, 60, 180, "0")))
 
-        if loop.is_running() == False:
-            loop.run_forever()
+        # run loop if it hasn't been triggered already
+        if not event_loop.is_running():
+            event_loop.run_forever()
 
-    elif power == "off":
+    # query is ?loop=stop
+    elif execution == "stop":
 
+        # cancel all tasks
         for task in tasks:
             task.cancel()
 
+        # clear set
         tasks.clear()
 
-        loop.call_soon_threadsafe(loop.stop)
+        # stop event loop
+        if event_loop.is_running():
+            event_loop.call_soon_threadsafe(event_loop.stop)
+
         print("Water cycle stopped...")
 
         pumprelay.off()
