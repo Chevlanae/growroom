@@ -1,6 +1,5 @@
 import adafruit_dht
 import board
-import time
 import asyncio
 from gpiozero import OutputDevice
 from gpiozero.pins import mock
@@ -28,25 +27,23 @@ class DHT22:
         # Adafruit bullshit https://github.com/adafruit/Adafruit_CircuitPython_DHT
         self.device = adafruit_dht.DHT22(getattr(board, "D" + str(dataPin)))
 
-    def read(self):
+    async def read(self):
         '''Reads the sensor and returns the data in a tuple: (humidity, temperature).
-        If the sensor is powered off it will be turned on, read, and turned off again.
-        If the sensor is malfunctioning or disconnected the function will attempt to read the sensor for 60 seconds, then return (None, None) if there is no reading.'''
+        If the sensor is powered off it will be turned on, read, and turned off again.'''
 
         # init
         power_state = self.power.value  # get current power state
-        timeout = time.time() + 15  # 15 second timeout
         humidity, temperature = None, None  # result
 
         self.power.on()  # power sensor on if it isn't already
 
         # loop until a result is returned, or until timeout has been reached
-        while time.time() < timeout:
+        while True:
 
             try:
 
                 # give the sensor 3 seconds, otherwise a bug will occur where the sensor will output the data from when it was previously powered on.
-                time.sleep(3.0)
+                await asyncio.sleep(3)
 
                 # read sensor
                 humidity, temperature = self.device.humidity, self.device.temperature
@@ -116,21 +113,3 @@ class DS18B20:
             result.append(device.get_temperature())
 
         return result
-
-
-async def power_loop(relay: OutputDevice, timeOn: int, timeOff: int, id=""):
-    '''Infinite loop that turns a relay on and off at the provided intervals'''
-
-    print("Power cycle started...")
-
-    while True:
-
-        relay.on()
-        print("Relay " + id + " On...")
-
-        await asyncio.sleep(timeOn)
-
-        relay.off()
-        print("Relay " + id + " Off...")
-
-        await asyncio.sleep(timeOff)

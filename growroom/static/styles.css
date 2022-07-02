@@ -18,9 +18,9 @@ div.container {
 	overflow: hidden;
 }
 
-table {
-	margin-top: 10%;
-	margin-bottom: 10%;
+table,
+tbody {
+	margin-bottom: 2em;
 	margin-left: auto;
 	margin-right: auto;
 }

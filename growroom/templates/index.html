@@ -7,12 +7,12 @@
 		<meta name="viewport" content="width-device-width, initial-scale=1">
 	</head>
 	<body style="font-size: 150%">
-		<div class="container" style="text-align: center; margin-top: 50px; min-width: 300px;">
+		<div class="container" style="text-align: center; margin-top: 50px; min-width: 450px;">
 			<img src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif" style="margin-top: 1em" />
 			<h1 style=>Grow Room</h1>
 			<div
 				class="container responsive"
-				style="text-align: center; max-width: 600px; padding: 25px 25px 25px 25px; background: white; border-style: solid;"
+				style="text-align: center; max-width: 1000px; padding: 25px 25px 25px 25px; background: white; border-style: solid;"
 			>
 				<h2>Sensor Data</h2>
 				<table id="meters" style="text-align: left">
@@ -40,12 +40,6 @@
 							<strong><span id="water-level"></span></strong>
 						</td>
 					</tr>
-					<tr>
-						<td>Water Loop Running?</td>
-						<td>
-							<strong><span id="loop-status"></span></strong>
-						</td>
-					</tr>
 				</table>
 
 				<h2>Relays</h2>
@@ -53,12 +47,20 @@
 					<tr>
 						<td><strong>Relay Id</strong></td>
 						<td><strong>Power State</strong></td>
+						<td><strong>Loop State</strong></td>
+						<td><strong>Toggle Loop</strong></td>
+						<td><strong>Time On (seconds)</strong></td>
+						<td><strong>Time Off (seconds)</strong></td>
 					</tr>
-					<tr id="relays">
+					<tr id="pump_relay">
 						<td>pump_relay</td>
 						<td>
-							<strong><span id="relay-status"></span></strong>
+							<strong><span class="power-state"></span></strong>
 						</td>
+						<td><strong><span class="loop-state"></span></strong></td>
+						<td><input class="toggle" type="button" value="Toggle"></td>
+						<td><input class="timeOn" type="number" value="60"></td>
+						<td><input class="timeOff" type="number" value="180"></td>
 					</tr>
 				</table>
 
@@ -66,7 +68,6 @@
 					<input id="refresh-toggle" type="checkbox" style="margin-top: 2em; margin-bottom: 2em" />
 					<label for="refresh-toggle"> Auto-refresh</label><br />
 					<input id="refresh" type="button" value="Refresh" /><br /><br />
-					<input id="toggle-loop" type="button" value="Toggle Water Loop" /><br />
 				</div>
 			</div>
 		</div>
