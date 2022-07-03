@@ -62,13 +62,15 @@ var airTemp = document.getElementById("air-temp"),
 	refreshInterval;
 
 function refreshRelay(id) {
-	row = document.getElementById("relay-table").querySelector("#" + id);
+	let row = document.getElementById(id);
 
 	try {
 		loop(row.id).then((response) => {
-			row.querySelector(".power-state").innerText = Boolean(response.power_state) ? "on" : "off";
+			row.querySelector(".power-state").innerText = response.power_state === 1 ? "on" : "off";
 			row.querySelector(".loop-state").innerText = response.loop_state;
 		});
+
+		return true;
 	} catch (e) {
 		console.error(e);
 	}
@@ -88,10 +90,8 @@ function refreshAll() {
 		waterLevel.innerText = !response.state;
 	});
 
-	for (let row of document.querySelector("#relay-table").getElementsByTagName("tr")) {
-		if (row.hasAttribute("id")) {
-			refreshRelay(row.id);
-		}
+	for (let row of document.getElementById("relay-table").getElementsByTagName("tr")) {
+		row.id && refreshRelay(row.id) && console.log("Refreshing " + row.id);
 	}
 }
 

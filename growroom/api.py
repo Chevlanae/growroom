@@ -1,4 +1,3 @@
-import functools
 from flask import Flask, make_response, request, render_template
 from gpiozero import OutputDevice, InputDevice
 import asyncio
@@ -11,7 +10,8 @@ dht22 = DHT22(27, 23)
 ds18b20 = DS18B20()
 llpk1 = InputDevice(25)
 relays = {
-    "pump_relay": OutputDevice(24)
+    "pump_relay": OutputDevice(24),
+    "test_relay": OutputDevice(22)
 }
 
 # flask
@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template('index.html', relays=relays.keys())
 
 
 @app.route("/DHT22")
@@ -41,7 +41,15 @@ async def read_DHT22():
 def read_DS18B20():
 
     return {
-        "temperature": ds18b20.read()
+        "temperature": round(ds18b20.read(), 1)
+    }
+
+
+@app.route("/LLPK1")
+def read_LLPK1():
+
+    return {
+        "state": llpk1.value
     }
 
 
@@ -144,12 +152,4 @@ def set_loop():
     return {
         'power_state': relay.value,
         'loop_state': loop_state
-    }
-
-
-@app.route("/LLPK1")
-def read_LLPK1():
-
-    return {
-        "state": llpk1.value
     }

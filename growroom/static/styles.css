@@ -10,48 +10,57 @@ body {
 	align-items: center;
 }
 
+div {
+	display: flex;
+}
+
+div input {
+	max-width: 100px;
+	align-self: center;
+}
+
+table,
+tbody {
+	max-width: min-content;
+	align-self: center;
+}
+
+th,
+td {
+	border-bottom: 1px solid #ddd;
+	padding-left: 10px;
+	padding-right: 10px;
+	min-width: 100px;
+}
+
+.timeOn,
+.timeOff {
+	max-width: 50px;
+}
+
 .container {
 	flex-direction: column;
+	align-content: space-around;
 }
 
 div.container {
 	overflow: hidden;
 }
 
-table,
-tbody {
-	margin-bottom: 2em;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-th,
-td {
-	padding-left: 1em;
-	padding-right: 1em;
-	border-bottom: 1px solid #ddd;
-}
-
-td span {
-	display: block;
-}
-
-td input {
-	display: block;
-}
-
-.header {
-	border-style: solid;
-	background-color: white;
-	overflow: hidden;
-}
-
-@media screen and (max-width: 800) {
-	body {
-		align-items: flex-start;
+@media screen and (max-width: 600) {
+	table#relay-table {
+		transform: rotate(270deg);
+		border-collapse: collapse;
+		margin-top: 100px;
+		margin-bottom: 100px;
 	}
 
-	.responsive {
-		position: relative;
+	table#relay-table th,
+	table#relay-table td {
+		transform: rotate(90deg);
+		padding-left: 0;
+		padding-right: 0;
+		height: 150px;
+		min-width: 50px;
 	}
 }
