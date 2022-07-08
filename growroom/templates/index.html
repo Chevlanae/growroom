@@ -3,74 +3,89 @@
 	<head>
 		<title>Growroom Monitor</title>
 		<link rel="stylesheet" type="text/css" href="/static/styles.css" />
-		<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}" />
-		<meta name="viewport" content="width-device-width, initial-scale=1">
+		<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+		<meta name="viewport" content="width-device-width, initial-scale=1" />
 	</head>
-	<body style="font-size: 150%">
-		<div class="container" style="text-align: center; margin-top: 50px; min-width: 860px;">
-			<img src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif" style="margin-top: 1em; max-width: 200px; align-self: center;" />
-			<h1 style=>Grow Room</h1>
-			<div
-				class="container responsive"
-				style="text-align: center; padding: 25px 25px 25px 25px; background: white; border-style: solid;"
-			>	
+	<body>
+		<div class="container" style="text-align: center; margin-right: auto; margin-left: auto">
+			<img
+				src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif"
+				style="margin-top: 1em; max-width: 200px; align-self: center"
+			/>
+			<h1>Grow Room</h1>
+			<div class="container" style="text-align: center; padding: 25px; background: white; border-style: solid">
 				<div class="container">
-					<input id="refresh" type="button" value="Refresh" /><span><input id="refresh-toggle" type="checkbox" style="margin-top: 2em; margin-bottom: 2em" /><label style="font-size: medium;" for="refresh-toggle"> Auto-refresh</label></span><br />
-					
+					<input id="refresh" type="button" value="Refresh" style="margin-bottom: 20px" />
+					<span style="font-size: medium"
+						>Refresh interval (sec) <input id="refresh-interval" type="number" value="20" style="margin-bottom: 20px; max-width: 50px" /><br /><input
+							id="refresh-toggle"
+							type="checkbox"
+						/><label for="refresh-toggle">Auto-refresh</label></span
+					>
+					<br />
 				</div>
 				<h2>Sensor Data</h2>
-				<table id="meters" style="text-align: left; min-width: 500px;">
-					<tr>
-						<td>Air Temperature</td>
-						<td>
-							<strong><span id="air-temp"></span></strong>
-						</td>
-					</tr>
-					<tr>
-						<td>Air Humidity</td>
-						<td>
-							<strong><span id="air-humidity"></span></strong>
-						</td>
-					</tr>
-					<tr>
-						<td>Water Temperature</td>
-						<td>
-							<strong><span id="water-temp"></span></strong>
-						</td>
-					</tr>
-					<tr>
-						<td>Water Level Low?</td>
-						<td>
-							<strong><span id="water-level"></span></strong>
-						</td>
-					</tr>
+				<table id="meters" style="text-align: left; min-width: 300px">
+					<tbody>
+						<tr>
+							<td>Air Temperature</td>
+							<td>
+								<strong><span id="air-temp"></span></strong>
+							</td>
+						</tr>
+						<tr>
+							<td>Air Humidity</td>
+							<td>
+								<strong><span id="air-humidity"></span></strong>
+							</td>
+						</tr>
+						<tr>
+							<td>Water Temperature</td>
+							<td>
+								<strong><span id="water-temp"></span></strong>
+							</td>
+						</tr>
+						<tr>
+							<td>Water Level Low?</td>
+							<td>
+								<strong><span id="water-level"></span></strong>
+							</td>
+						</tr>
+					</tbody>
 				</table>
 
 				<h2>Relays</h2>
 				<table id="relay-table" rules="columns">
-					<tr>
-						<th><div>Relay Id</div></th>
-						<th><div>Power State</div></th>
-						<th><div>Loop State</div></th>
-						<th><div>Toggle Loop</div></th>
-						<th><div>Time On (seconds)</div></th>
-						<th><div>Time Off (seconds)</div></th>
-					</tr>
-					{% for relay in relays %}
+					<tbody>
+						<tr>
+							<th><div>Relay Id</div></th>
+							<th><div>Power State</div></th>
+							<th><div>On/Off</div></th>
+							<th><div>Loop State</div></th>
+							<th><div>Toggle Loop</div></th>
+							<th><div>Time On (seconds)</div></th>
+							<th><div>Time Off (seconds)</div></th>
+						</tr>
+
+						{% for relay in relays %}
 						<tr id="{{ relay }}">
 							<td>{{ relay }}</td>
 							<td>
 								<strong><span class="power-state"></span></strong>
 							</td>
-							<td><strong><span class="loop-state"></span></strong></td>
-							<td><input class="toggle" type="button" value="Toggle"></td>
-							<td><input class="timeOn" type="number" value="60"></td>
-							<td><input class="timeOff" type="number" value="180"></td>
+							<td><input class="powerOn" type="button" value="on" /> <input class="powerOff" type="button" value="off" /></td>
+							<td>
+								<strong><span class="loop-state"></span></strong>
+							</td>
+							<td><input class="toggle" type="button" value="Toggle" /></td>
+							<td><input class="timeOn" type="number" value="60" /></td>
+							<td><input class="timeOff" type="number" value="180" /></td>
 						</tr>
-					{% endfor %}
+						{% endfor %}
+					</tbody>
 				</table>
 			</div>
 		</div>
+		<script src="/static/index.js"></script>
 	</body>
-	<script src="/static/index.js"></script>
 </html>

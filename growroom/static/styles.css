@@ -23,6 +23,8 @@ table,
 tbody {
 	max-width: min-content;
 	align-self: center;
+	margin-top: 50px;
+	margin-bottom: 50px;
 }
 
 th,
@@ -30,7 +32,6 @@ td {
 	border-bottom: 1px solid #ddd;
 	padding-left: 10px;
 	padding-right: 10px;
-	min-width: 100px;
 }
 
 .timeOn,
@@ -47,20 +48,9 @@ div.container {
 	overflow: hidden;
 }
 
-@media screen and (max-width: 600) {
-	table#relay-table {
-		transform: rotate(270deg);
-		border-collapse: collapse;
-		margin-top: 100px;
-		margin-bottom: 100px;
-	}
-
-	table#relay-table th,
-	table#relay-table td {
-		transform: rotate(90deg);
-		padding-left: 0;
-		padding-right: 0;
-		height: 150px;
-		min-width: 50px;
+@media screen and (max-width: 900px) {
+	.container {
+		background: f3f3f3;
+		border-style: none;
 	}
 }

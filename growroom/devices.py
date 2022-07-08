@@ -37,7 +37,7 @@ class DHT22:
 
         self.power.on()  # power sensor on if it isn't already
 
-        # loop until a result is returned, or until timeout has been reached
+        # loop until a result is returned
         while True:
 
             try:
@@ -113,3 +113,24 @@ class DS18B20:
             result.append(device.get_temperature())
 
         return result
+
+
+async def power_loop(relay: OutputDevice, timeOn: int, timeOff: int, id=""):
+    '''Infinite loop that turns a relay on and off at the provided intervals'''
+
+    try:
+        while True:
+
+            relay.on()
+            print(id + " on...")
+
+            await asyncio.sleep(timeOn)
+
+            relay.off()
+            print(id + " off...")
+
+            await asyncio.sleep(timeOff)
+
+    except asyncio.CancelledError:
+        print(id + " loop cancelled...")
+        relay.off()

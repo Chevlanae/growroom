@@ -1,3 +1,5 @@
+//! helper functions
+
 async function DHT22() {
 	let request = await fetch("/DHT22");
 
@@ -14,6 +16,25 @@ async function LLPK1() {
 	let request = await fetch("/LLPK1");
 
 	return await request.json();
+}
+
+async function relay(id = null, power = null) {
+	let response,
+		queryParams = [];
+
+	if (typeof id === "string") {
+		queryParams.push("id=" + id);
+
+		if (typeof power === "boolean") {
+			queryParams.push("power=" + (power ? "on" : "off"));
+		}
+	}
+
+	let queryString = "?" + queryParams.join("&");
+
+	response = await fetch("/relay" + queryString);
+
+	return await response.json();
 }
 
 /**
@@ -44,15 +65,17 @@ async function loop(id, timeOn = null, timeOff = null, loop_state = null) {
 			}
 		}
 
-		let queryString = queryParams.join("&");
+		let queryString = "?" + queryParams.join("&");
 
-		response = await fetch("/loop?" + queryString);
+		response = await fetch("/loop" + queryString);
 
 		return await response.json();
 	} else {
 		console.error(id + " is an invalid loop ID");
 	}
 }
+
+//! globals
 
 var airTemp = document.getElementById("air-temp"),
 	airHumidity = document.getElementById("air-humidity"),
@@ -61,25 +84,22 @@ var airTemp = document.getElementById("air-temp"),
 	refreshToggle = document.getElementById("refresh-toggle"),
 	refreshInterval;
 
+//! event handlers
 function refreshRelay(id) {
 	let row = document.getElementById(id);
 
-	try {
-		loop(row.id).then((response) => {
-			row.querySelector(".power-state").innerText = response.power_state === 1 ? "on" : "off";
-			row.querySelector(".loop-state").innerText = response.loop_state;
-		});
+	loop(row.id).then((response) => {
+		row.querySelector(".power-state").innerText = response.power_state === 1 ? "on" : "off";
+		row.querySelector(".loop-state").innerText = response.loop_state;
+	});
 
-		return true;
-	} catch (e) {
-		console.error(e);
-	}
+	return true;
 }
 
 function refreshAll() {
 	DHT22().then((response) => {
 		airTemp.innerText = response.temperature + "° C";
-		airHumidity.innerText = response.humidity + "% RH";
+		airHumidity.innerText = response.humidity + "%";
 	});
 
 	DS18B20().then((response) => {
@@ -97,31 +117,54 @@ function refreshAll() {
 
 function autoRefresh() {
 	if (refreshToggle.checked) {
+		let desiredInterval = Number(document.getElementById("refresh-interval").value);
+
 		refreshAll();
-		refreshInterval = setInterval(refreshAll, 20 * 1000);
+		refreshInterval = setInterval(refreshAll, desiredInterval * 1000);
 	} else {
 		clearInterval(refreshInterval);
 	}
 }
 
-document.getElementById("refresh").addEventListener("click", refreshAll);
-refreshToggle.addEventListener("input", autoRefresh);
+//! set event listeners
 
+//uncheck the auto refresh checkbox if it's checked when the page is loaded
 if (refreshToggle.checked) {
 	refreshToggle.click();
 }
 
+//refresh events
+document.getElementById("refresh").addEventListener("click", refreshAll);
+refreshToggle.addEventListener("input", autoRefresh);
+
+//relay table events
 for (let row of document.getElementById("relay-table").getElementsByTagName("tr")) {
-	toggle = row.querySelector(".toggle");
+	let toggle = row.querySelector(".toggle"),
+		on = row.querySelector(".powerOn"),
+		off = row.querySelector(".powerOff");
 
 	toggle &&
+		row.hasAttribute("id") &&
 		toggle.addEventListener("click", function () {
-			if (row.hasAttribute("id")) {
-				loop(row.id).then((response) =>
-					loop(row.id, Number(row.querySelector(".timeOn").value) || null, Number(row.querySelector(".timeOff").value) || null, response.loop_state)
-				);
+			loop(row.id).then((response) =>
+				loop(
+					row.id,
+					Number(row.querySelector(".timeOn").value) || null,
+					Number(row.querySelector(".timeOff").value) || null,
+					response.loop_state
+				).then(() => refreshRelay(row.id))
+			);
+		});
 
-				setTimeout(refreshRelay, 1000, row.id);
-			}
+	on &&
+		row.hasAttribute("id") &&
+		on.addEventListener("click", function () {
+			relay(row.id, true).then(() => refreshRelay(row.id));
+		});
+
+	off &&
+		row.hasAttribute("id") &&
+		off.addEventListener("click", function () {
+			relay(row.id, false).then(() => refreshRelay(row.id));
 		});
 }

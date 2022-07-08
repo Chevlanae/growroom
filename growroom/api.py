@@ -3,7 +3,8 @@ from gpiozero import OutputDevice, InputDevice
 import asyncio
 
 # local
-from devices import DHT22, DS18B20
+from devices import DHT22, DS18B20, power_loop
+
 
 # local GPIO devices
 dht22 = DHT22(27, 23)
@@ -11,8 +12,11 @@ ds18b20 = DS18B20()
 llpk1 = InputDevice(25)
 relays = {
     "pump_relay": OutputDevice(24),
-    "test_relay": OutputDevice(22)
 }
+
+# loop init
+event_loop = asyncio.new_event_loop()
+tasks = set()  # task aggregator
 
 # flask
 app = Flask(__name__)
@@ -53,47 +57,49 @@ def read_LLPK1():
     }
 
 
-async def power_loop(relay: OutputDevice, timeOn: int, timeOff: int, id=""):
-    '''Infinite loop that turns a relay on and off at the provided intervals'''
+@app.route("/relay")
+def relay_api():
 
-    try:
-        while True:
+    # query params
+    id = request.args.get("id")
+    power = request.args.get("power", "", type=str)
 
-            relay.on()
-            print(id + " on...")
+    if id == None:
+        connected_relays = []
 
-            await asyncio.sleep(timeOn)
+        for relay in relays.keys():
+            connected_relays.append(relay)
+        return {
+            "connected_relays": connected_relays
+        }
 
-            relay.off()
-            print(id + " off...")
+    relay = relays[id]
 
-            await asyncio.sleep(timeOff)
+    power == "on" and relay.on()
+    power == "off" and relay.off()
 
-    except asyncio.CancelledError:
-        print(id + " loop cancelled...")
-        relay.off()
-
-
-# loop init
-event_loop = asyncio.new_event_loop()
-tasks = set()  # task aggregator
+    return {
+        "power_state": relay.value,
+    }
 
 
 @app.route("/loop")
 def set_loop():
 
     # query params
+    id = request.args.get("id")
     execution = request.args.get("execution", "", type=str)
     timeOn = request.args.get("timeOn", "60", type=str)
     timeOff = request.args.get("timeOff", "180", type=str)
 
     # if no "id" query parameter then return list of all running loops
-    try:
-        id = request.args.get("id")
-    except:
+    if id == None:
+
         running_loops = []
+
         for item in tasks:
             running_loops.append(item.get_name())
+
         return {
             "running_loops": running_loops
         }
@@ -111,18 +117,27 @@ def set_loop():
 
         return make_response({"error": "Invalid relay ID", "params": params}, 400)
 
+    # set task
+    task = None
+    for item in tasks:
+        if item.get_name() == id:
+            task = item
+            break
+
     # ?execution=start
     if execution == "start":
 
-        # create power_loop task and add it to tasks set
-        task = event_loop.create_task(
-            power_loop(relay, int(timeOn), int(timeOff), id))
+        if task == None:
 
-        task.set_name(id)
+            # create power_loop task and add it to tasks set
+            task = event_loop.create_task(
+                power_loop(relay, int(timeOn), int(timeOff), id))
 
-        tasks.add(task)
+            task.set_name(id)
 
-        # run loop if it hasn't been triggered already
+            tasks.add(task)
+
+        # run event loop if it hasn't been triggered already
         if not event_loop.is_running():
             event_loop.run_forever()
 
@@ -131,12 +146,9 @@ def set_loop():
     # ?execution=stop
     elif execution == "stop":
 
-        # cancel task
-        for task in tasks:
-            if task.get_name() == id:
-                task.cancel()
-                tasks.discard(task)
-                break
+        # cancel task and discard it from tasks set
+        task.cancel()
+        tasks.discard(task)
 
         # stop event loop if tasks are complete
         if len(tasks) == 0:
@@ -144,10 +156,10 @@ def set_loop():
 
         app.logger.log(0, "Power cycle %s stopped...", id, exc_info=1)
 
+    # loop state
     loop_state = "Stopped"
-    for task in tasks:
-        if task.get_name() == id:
-            loop_state = "Running"
+    if task != None:
+        loop_state = "Running"
 
     return {
         'power_state': relay.value,
