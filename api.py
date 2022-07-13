@@ -115,7 +115,7 @@ def set_loop():
             "timeOff": timeOff
         }
 
-        return make_response({"error": "Invalid relay ID", "params": params}, 400)
+        return make_response("Invalid relay ID", 400)
 
     # set task
     task = None
