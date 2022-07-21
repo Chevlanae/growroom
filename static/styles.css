@@ -51,6 +51,6 @@ div.container {
 @media screen and (max-width: 900px) {
 	.container {
 		background: f3f3f3;
-		border-style: none;
+		border-style: none !important;
 	}
 }

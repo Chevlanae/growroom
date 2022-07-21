@@ -8,19 +8,16 @@
 	</head>
 	<body>
 		<div class="container" style="text-align: center; margin-right: auto; margin-left: auto">
-			<img
-				src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif"
-				style="margin-top: 1em; max-width: 200px; align-self: center"
-			/>
+			<img src="https://33.media.tumblr.com/a93f0b728d857b22d95473ecdee58677/tumblr_nnqeqsRrmp1uubg9co1_250.gif" style="margin-top: 1em; max-width: 200px; align-self: center" />
 			<h1>Grow Room</h1>
 			<div class="container" style="text-align: center; padding: 25px; background: white; border-style: solid">
 				<div class="container">
 					<input id="refresh" type="button" value="Refresh" style="margin-bottom: 20px" />
 					<span style="font-size: medium"
-						>Refresh interval (sec) <input id="refresh-interval" type="number" value="20" style="margin-bottom: 20px; max-width: 50px" /><br /><input
-							id="refresh-toggle"
-							type="checkbox"
-						/><label for="refresh-toggle">Auto-refresh</label></span
+						>Refresh interval (sec) <input id="refresh-interval" type="number" value="20" style="margin-bottom: 20px; max-width: 50px" /><br /><input id="refresh-toggle" type="checkbox" /><label
+							for="refresh-toggle"
+							>Auto-refresh</label
+						></span
 					>
 					<br />
 				</div>
@@ -53,33 +50,26 @@
 						</tr>
 					</tbody>
 				</table>
-
-				<h2>Relays</h2>
+				<h2>Power Loop</h2>
 				<table id="relay-table" rules="columns">
 					<tbody>
 						<tr>
-							<th><div>Relay Id</div></th>
-							<th><div>Power State</div></th>
-							<th><div>On/Off</div></th>
-							<th><div>Loop State</div></th>
-							<th><div>Toggle Loop</div></th>
-							<th><div>Time On (seconds)</div></th>
-							<th><div>Time Off (seconds)</div></th>
+							<th><div>ID</div></th>
+							<th><div>State</div></th>
+							<th><div>Toggle</div></th>
+							<th><div>Time On</div></th>
+							<th><div>Time Off</div></th>
 						</tr>
 
 						{% for relay in relays %}
 						<tr id="{{ relay }}">
 							<td>{{ relay }}</td>
 							<td>
-								<strong><span class="power-state"></span></strong>
-							</td>
-							<td><input class="powerOn" type="button" value="on" /> <input class="powerOff" type="button" value="off" /></td>
-							<td>
 								<strong><span class="loop-state"></span></strong>
 							</td>
 							<td><input class="toggle" type="button" value="Toggle" /></td>
-							<td><input class="timeOn" type="number" value="60" /></td>
-							<td><input class="timeOff" type="number" value="180" /></td>
+							<td><input class="timeOn" type="number" /></td>
+							<td><input class="timeOff" type="number" /></td>
 						</tr>
 						{% endfor %}
 					</tbody>
