@@ -18,25 +18,6 @@ async function LLPK1() {
 	return await request.json();
 }
 
-async function relay(id = null, power = null) {
-	let response,
-		queryParams = [];
-
-	if (typeof id === "string") {
-		queryParams.push("id=" + id);
-
-		if (typeof power === "boolean") {
-			queryParams.push("power=" + (power ? "on" : "off"));
-		}
-	}
-
-	let queryString = "?" + queryParams.join("&");
-
-	response = await fetch("/relay" + queryString);
-
-	return await response.json();
-}
-
 /**
  * Gets data about a given loop. Toggle the execution of the loop with the "loop_state" parameter.
  * @param {boolean | null} loop_state Toggles loop execution depending on the given "loop_state". For example, if loop_state == true, then GET /loop?execution=stop
@@ -81,16 +62,20 @@ var airTemp = document.getElementById("air-temp"),
 	airHumidity = document.getElementById("air-humidity"),
 	waterTemp = document.getElementById("water-temp"),
 	waterLevel = document.getElementById("water-level"),
+	relayTable = document.getElementById("relay-table"),
+	refresh = document.getElementById("refresh"),
 	refreshToggle = document.getElementById("refresh-toggle"),
-	refreshInterval;
+	refreshInterval = document.getElementById("refresh-interval"),
+	globalInterval;
 
 //! event handlers
 function refreshRelay(id) {
 	let row = document.getElementById(id);
 
 	loop(row.id).then((response) => {
-		row.querySelector(".power-state").innerText = response.power_state === 1 ? "on" : "off";
 		row.querySelector(".loop-state").innerText = response.loop_state;
+		row.querySelector(".timeOn").value = response.loop_info.kwargs.timeOn;
+		row.querySelector(".timeOff").value = response.loop_info.kwargs.timeOff;
 	});
 
 	return true;
@@ -110,19 +95,19 @@ function refreshAll() {
 		waterLevel.innerText = !response.state;
 	});
 
-	for (let row of document.getElementById("relay-table").getElementsByTagName("tr")) {
-		row.id && refreshRelay(row.id) && console.log("Refreshing " + row.id);
+	for (let row of relayTable.getElementsByTagName("tr")) {
+		row.id && refreshRelay(row.id) && console.log("Refreshed " + row.id);
 	}
 }
 
 function autoRefresh() {
 	if (refreshToggle.checked) {
-		let desiredInterval = Number(document.getElementById("refresh-interval").value);
+		let desiredInterval = Number(refreshInterval.value);
 
 		refreshAll();
-		refreshInterval = setInterval(refreshAll, desiredInterval * 1000);
+		globalInterval = setInterval(refreshAll, desiredInterval * 1000);
 	} else {
-		clearInterval(refreshInterval);
+		clearInterval(globalInterval);
 	}
 }
 
@@ -134,37 +119,18 @@ if (refreshToggle.checked) {
 }
 
 //refresh events
-document.getElementById("refresh").addEventListener("click", refreshAll);
+refresh.addEventListener("click", refreshAll);
 refreshToggle.addEventListener("input", autoRefresh);
 
 //relay table events
-for (let row of document.getElementById("relay-table").getElementsByTagName("tr")) {
-	let toggle = row.querySelector(".toggle"),
-		on = row.querySelector(".powerOn"),
-		off = row.querySelector(".powerOff");
+for (let row of relayTable.getElementsByTagName("tr")) {
+	let toggle = row.querySelector(".toggle");
 
 	toggle &&
 		row.hasAttribute("id") &&
 		toggle.addEventListener("click", function () {
 			loop(row.id).then((response) =>
-				loop(
-					row.id,
-					Number(row.querySelector(".timeOn").value) || null,
-					Number(row.querySelector(".timeOff").value) || null,
-					response.loop_state
-				).then(() => refreshRelay(row.id))
+				loop(row.id, Number(row.querySelector(".timeOn").value) || null, Number(row.querySelector(".timeOff").value) || null, response.loop_state).then(() => refreshRelay(row.id))
 			);
-		});
-
-	on &&
-		row.hasAttribute("id") &&
-		on.addEventListener("click", function () {
-			relay(row.id, true).then(() => refreshRelay(row.id));
-		});
-
-	off &&
-		row.hasAttribute("id") &&
-		off.addEventListener("click", function () {
-			relay(row.id, false).then(() => refreshRelay(row.id));
 		});
 }

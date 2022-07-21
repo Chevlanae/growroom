@@ -72,8 +72,8 @@ class DHT22:
         return humidity, temperature
 
     def readOne(self):
-        '''Same as the read function except it only reads the sensor once, even if the reading might fail.
-        If the reading fails the function returns None.'''
+        '''Same as the read function except it only reads the sensor once, even if the reading raises an exception.
+        If the reading raises an exception, returns None.'''
 
         try:
             # read sensor
@@ -113,24 +113,3 @@ class DS18B20:
             result.append(device.get_temperature())
 
         return result
-
-
-async def power_loop(relay: OutputDevice, timeOn: int, timeOff: int, id=""):
-    '''Infinite loop that turns a relay on and off at the provided intervals'''
-
-    try:
-        while True:
-
-            relay.on()
-            print(id + " on...")
-
-            await asyncio.sleep(timeOn)
-
-            relay.off()
-            print(id + " off...")
-
-            await asyncio.sleep(timeOff)
-
-    except asyncio.CancelledError:
-        print(id + " loop cancelled...")
-        relay.off()

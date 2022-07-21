@@ -12,7 +12,7 @@ dht22 = DHT22(27, 23)
 ds18b20 = DS18B20()
 llpk1 = InputDevice(25)
 relays = {
-    "pump_relay": OutputDevice(24),
+    "pump_relay": 24,
 }
 
 # start task handler
@@ -57,44 +57,18 @@ def read_LLPK1():
     }
 
 
-@app.route("/relay")
-def relay_api():
-
-    # query params
-    id = request.args.get("id")
-    power = request.args.get("power", "", type=str)
-
-    if id == None:
-        connected_relays = []
-
-        for relay in relays.keys():
-            connected_relays.append(relay)
-        return {
-            "connected_relays": connected_relays
-        }
-
-    relay = relays[id]
-
-    power == "on" and relay.on()
-    power == "off" and relay.off()
-
-    return {
-        "power_state": relay.value,
-    }
-
-
 @app.route("/loop")
 def set_loop():
 
     # query params
     args = {
         "id": request.args.get("id"),
-        "timeOn": request.args.get("timeOn", "60", type=str),
-        "timeOff": request.args.get("timeOff", "300", type=str)
+        "timeOn": request.args.get("timeOn", "60", type=int),
+        "timeOff": request.args.get("timeOff", "300", type=int)
     }
 
     # if no "id" query parameter then return list of all running loops
-    if args.id == None:
+    if args["id"] == None:
 
         arr = []
 
@@ -105,30 +79,32 @@ def set_loop():
             "running_tasks": arr
         }
 
-    # set relay
+    # set relay in args dict
     try:
-        args["relay"] = relays[args.id]
+        args["relay_pin"] = relays[args["id"]]
     except KeyError:
         return make_response('''Invalid query param "id"''', 400)
 
-    # operation param
+    # main operation
     execution = request.args.get("execution", "", type=str)
 
     # ?execution=start
     if execution == "start":
-        th.start(args.id, **args)
+        th.start('power_loop', args["id"], **args)
 
     # ?execution=stop
     elif execution == "stop":
-        th.stop(args.id)
+        th.stop(args["id"])
 
-    # loop state
-    loop_state = "Stopped"
-    for task in th.tasks_set:
-        if task.get_name() == args.id:
-            loop_state = "Running"
+    task = th.fetch_task(args["id"])
+
+    # get loop task state
+    if task != None:
+        loop_state = "Running"
+    else:
+        loop_state = "Stopped"
 
     return {
-        'power_state': args.relay.value,
-        'loop_state': loop_state
+        'loop_state': loop_state,
+        'loop_info': th.fetch_task_info(args["id"])
     }
