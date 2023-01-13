@@ -62,6 +62,7 @@ var airTemp = document.getElementById("air-temp"),
 	airHumidity = document.getElementById("air-humidity"),
 	waterTemp = document.getElementById("water-temp"),
 	waterLevel = document.getElementById("water-level"),
+
 	relayTable = document.getElementById("relay-table"),
 	refresh = document.getElementById("refresh"),
 	refreshToggle = document.getElementById("refresh-toggle"),
