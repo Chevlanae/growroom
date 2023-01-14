@@ -34,10 +34,7 @@ class task_handler:
 
         # add task info to persistence object
         with shelve.open(self.filename) as tasks_db:
-            tasks_db[task_id] = {
-                "coro": coro,
-                "kwargs": kwargs
-            }
+            tasks_db[task_id] = {"coro": coro, "kwargs": kwargs}
 
         # run event loop if it's stopped
         if not self.event_loop.is_running():

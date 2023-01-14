@@ -1,16 +1,19 @@
-from flask import Flask, make_response, request, render_template
-from gpiozero import OutputDevice, InputDevice
+from flask import Flask, make_response, request, render_template, Response
+from gpiozero import InputDevice
 import asyncio
 
 # local
-from devices import DHT22, DS18B20
+from devices import DHT22, DS18B20, ADS1115, Camera
 from persistence import task_handler
 
+# local camera
+pi_camera = Camera()
 
 # local GPIO devices
 dht22 = DHT22(27, 23)
 ds18b20 = DS18B20()
 llpk1 = InputDevice(25)
+ads1115 = ADS1115()
 relays = {
     "pump_relay": 24,
 }
@@ -27,6 +30,11 @@ def index():
     return render_template('index.html', relays=relays.keys())
 
 
+@app.route('/camera_feed')
+def camera_feed():
+    return Response(pi_camera.gen_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
 @app.route("/DHT22")
 async def read_DHT22():
 
@@ -35,26 +43,19 @@ async def read_DHT22():
     except asyncio.TimeoutError:
         humidity, temperature = None, None
 
-    return {
-        "humidity": humidity,
-        "temperature": temperature
-    }
+    return {"humidity": humidity, "temperature": temperature}
 
 
 @app.route("/DS18B20")
 def read_DS18B20():
 
-    return {
-        "temperature": round(ds18b20.read(), 1)
-    }
+    return {"temperature": round(ds18b20.read(), 1)}
 
 
 @app.route("/LLPK1")
 def read_LLPK1():
 
-    return {
-        "state": llpk1.value
-    }
+    return {"state": llpk1.value}
 
 
 @app.route("/loop")
@@ -75,9 +76,7 @@ def set_loop():
         for task in th.tasks_set:
             arr.append(task.get_name())
 
-        return {
-            "running_tasks": arr
-        }
+        return {"running_tasks": arr}
 
     # set relay in args dict
     try:
@@ -107,4 +106,16 @@ def set_loop():
     return {
         'loop_state': loop_state,
         'loop_info': th.fetch_task_info(args["id"])
+    }
+
+
+@app.route("/ADS1115")
+def read_TDS():
+
+    if th.fetch_task("ADS1115") == None:
+        th.start("run_tds", "ADS1115")
+
+    return {
+        "averageVoltage": ads1115.metadata["averageVoltage"],
+        "tdsValue": ads1115.metadata["tdsValue"]
     }
